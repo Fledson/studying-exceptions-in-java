@@ -1,14 +1,16 @@
 package application;
 
 import model.entities.Reservation;
+import model.exceptions.DomainException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Program {
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) {
         /**
          * Regras de validação:
          * 1 - a data de check-out deve ser depois do check-in (no mínimo 1 noite)
@@ -19,18 +21,17 @@ public class Program {
         Scanner sc = new Scanner(System.in);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-        System.out.print("Room number: ");
-        int roomNumber = sc.nextInt();
+        try {
+            System.out.print("Room number: ");
+            int roomNumber = sc.nextInt();
 
-        System.out.print("Check-in date (dd/MM/yyyy): ");
-        Date checkin = sdf.parse(sc.next());
+            System.out.print("Check-in date (dd/MM/yyyy): ");
+            Date checkin = sdf.parse(sc.next());
 
-        System.out.print("Check-out date (dd/MM/yyyy): ");
-        Date checkout = sdf.parse(sc.next());
+            System.out.print("Check-out date (dd/MM/yyyy): ");
+            Date checkout = sdf.parse(sc.next());
 
-        if (!checkout.after(checkin)) {
-            System.out.println("Error in reservation: Check-out date must be after check-in date");
-        } else {
+
             Reservation reservation = new Reservation(roomNumber, checkin, checkout);
             System.out.println(reservation);
 
@@ -41,12 +42,16 @@ public class Program {
             System.out.print("Check-out date (dd/MM/yyyy): ");
             checkout = sdf.parse(sc.next());
 
-            String error = reservation.updateDates(checkin, checkout);
-            if (error != null) {
-                System.out.println("Error in reservation: " + error);
-            } else  {
-                System.out.println("Reservation: " + reservation);
-            }
+            reservation.updateDates(checkin, checkout);
+            System.out.println("Reservation: " + reservation);
+        } catch (ParseException e) {
+            System.out.println("Invalid date format");
+        } catch (DomainException e) {
+            System.out.println("Error in reservation: " + e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("Error: the room number must be entered with numbers only");
+        } catch (RuntimeException e ) {
+            System.out.println("Unexpected error");
         }
 
         sc.close();
